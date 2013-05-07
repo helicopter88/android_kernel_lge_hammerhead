@@ -145,6 +145,7 @@
 #define LDO_DELTA_MAX		100000
 
 #define MSM_L2_SAW_PHYS		0xf9012000
+#define GCC_BASE		0xF9011000
 /**
  * struct pmic_gang_vreg -
  * @name:			the string used to represent the gang
@@ -1546,6 +1547,7 @@ void secondary_cpu_hs_init(void *base_ptr)
 {
 	uint32_t reg_val;
 	void *l2_saw_base;
+	void *gcc_base_ptr;
 
 	if (version == 0) {
 		gcc_base_ptr = ioremap_nocache(GCC_BASE, SZ_4K);
