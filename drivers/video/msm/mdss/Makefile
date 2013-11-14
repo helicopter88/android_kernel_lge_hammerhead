@@ -16,7 +16,7 @@ ifeq ($(CONFIG_FB_MSM_MDSS),y)
 obj-$(CONFIG_DEBUG_FS) += mdss_debug.o
 endif
 
-dsi-v2-objs = dsi_v2.o dsi_host_v2.o dsi_io_v2.o dsi_panel_v2.o
+dsi-v2-objs = dsi_v2.o dsi_host_v2.o dsi_io_v2.o
 obj-$(CONFIG_FB_MSM_MDSS) += dsi-v2.o
 
 mdss-dsi-objs := mdss_dsi.o mdss_dsi_host.o
@@ -40,5 +40,4 @@ mdss-qpic-objs := mdss_qpic.o mdss_fb.o mdss_qpic_panel.o
 obj-$(CONFIG_FB_MSM_QPIC) += mdss-qpic.o
 obj-$(CONFIG_FB_MSM_QPIC_ILI_QVGA_PANEL) += qpic_panel_ili_qvga.o
 
-obj-$(CONFIG_FB_MSM_MDSS) += mdss_fb.o
-obj-$(CONFIG_FB_MSM_MDSS) += lcd_notify.o
+obj-$(CONFIG_FB_MSM_MDSS) += mdss_fb.o lcd_notify.o
