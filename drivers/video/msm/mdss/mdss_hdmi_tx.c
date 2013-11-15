@@ -33,6 +33,7 @@
 #include "mdss.h"
 #include "mdss_panel.h"
 #include "mdss_hdmi_mhl.h"
+#include <linux/slimport.h>
 
 #define DRV_NAME "hdmi-tx"
 #define COMPATIBLE_NAME "qcom,hdmi-tx"
@@ -2214,6 +2215,25 @@ static int hdmi_tx_set_mhl_max_pclk(struct platform_device *pdev, u32 max_val)
 		return -EINVAL;
 	}
 	return 0;
+}
+
+int msm_hdmi_register_sp(struct platform_device *pdev,
+                        struct msm_hdmi_sp_ops *ops)
+{
+       struct hdmi_tx_ctrl *hdmi_ctrl = platform_get_drvdata(pdev);
+
+       if (!hdmi_ctrl) {
+               DEV_ERR("%s: invalid pdev\n", __func__);
+               return -ENODEV;
+       }
+
+       if (!ops) {
+               DEV_ERR("%s: invalid ops\n", __func__);
+               return -EINVAL;
+       }
+       ops->set_upstream_hpd = hdmi_tx_set_mhl_hpd;
+
+       return 0;
 }
 
 int msm_hdmi_register_mhl(struct platform_device *pdev,
