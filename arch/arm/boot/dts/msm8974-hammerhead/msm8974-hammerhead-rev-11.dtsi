@@ -27,10 +27,11 @@
 		vibe-warmup-delay = <25>;
 	};
 
-	qcom,mdss_dsi_jdi_command_ors {
+	qcom,mdss_dsi@fd922800 {
+                qcom,dsi-pref-prim-pan = <&dsi_jdi_command_ors>;
 		status = "ok";
 		qcom,cont-splash-enabled;
-	};
+        };
 
 	gpio_keys {
 		cover-switch {
