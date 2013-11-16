@@ -10,44 +10,43 @@
  * GNU General Public License for more details.
  */
 
-&mdss_mdp {
-	dsi_lgit_video: qcom,mdss_dsi_lgit_video {
-		qcom,mdss-dsi-panel-name = "LGIT 1080p video mode dsi panel";
-		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
-		qcom,mdss-dsi-panel-type = "dsi_video_mode";
+&soc {
+	qcom,mdss_dsi_lgit_video {
+		compatible = "qcom,mdss-dsi-panel";
+		label = "LGIT 1080p video mode dsi panel";
+		status = "disable";
+		qcom,dsi-ctrl-phandle = <&mdss_dsi0>;
 		qcom,enable-gpio = <&msmgpio 58 0>;
 		qcom,rst-gpio = <&pm8941_gpios 19 0>;
-		qcom,mdss-dsi-virtual-channel-id = <1>;
-		qcom,mdss-panel-flip-ud;
-		qcom,mdss-dsi-panel-width = <1080>;
-                qcom,mdss-dsi-panel-height = <1920>;
-		qcom,mdss-dsi-bpp = <24>;
-		qcom,mdss-dsi-panel-destination = "display_1";
-		qcom,mdss-panel-porch-values = <95 4 100 9 1 10>;
-		qcom,mdss-panel-underflow-clr = <0xff>;
-		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
-		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-panel-dsi-mode = <0>;
-		qcom,mdss-dsi-h-sync-pulse = <0>;
-		qcom,mdss-panel-dsi-h-power-stop = <0 0 0>;
-		qcom,mdss-panel-dsi-bllp-power-stop = <1 1>;
-		qcom,mdss-panel-dsi-traffic-mode = <1>;
-		qcom,mdss-panel-dsi-dst-format = <3>;
-		qcom,mdss-panel-dsi-vc = <0>;
-		qcom,mdss-panel-dsi-rgb-swap = <0>;
-		qcom,mdss-panel-dsi-data-lanes = <1 1 1 1>;
-		qcom,mdss-panel-dsi-dlane-swap = <0>;
-		qcom,mdss-dsi-t-clk-pre = <0x22>;
-		qcom,mdss-dsi-t-clk-post = <0x36>;
-		qcom,mdss-dsi-stream = <0>;
-		qcom,mdss-dsi-mdp-trigger = <0x0>;
-		qcom,mdss-dsi-dma-trigger = <0x04>;
-		qcom,mdss-dsi-panel-framerate = <60>;
-		qcom,mdss-panel-clk-rate = <899000000>;
+		qcom,mdss-pan-id = <1>;
+		qcom,mdss-pan-flip-ud;
+		qcom,mdss-pan-res = <1080 1920>;
+		qcom,mdss-pan-bpp = <24>;
+		qcom,mdss-pan-dest = "display_1";
+		qcom,mdss-pan-porch-values = <95 4 100 9 1 10>;
+		qcom,mdss-pan-underflow-clr = <0xff>;
+		qcom,mdss-pan-bl-ctrl = "bl_ctrl_wled";
+		qcom,mdss-pan-bl-levels = <1 255>;
+		qcom,mdss-pan-dsi-mode = <0>;
+		qcom,mdss-pan-dsi-h-pulse-mode = <0>;
+		qcom,mdss-pan-dsi-h-power-stop = <0 0 0>;
+		qcom,mdss-pan-dsi-bllp-power-stop = <1 1>;
+		qcom,mdss-pan-dsi-traffic-mode = <1>;
+		qcom,mdss-pan-dsi-dst-format = <3>;
+		qcom,mdss-pan-dsi-vc = <0>;
+		qcom,mdss-pan-dsi-rgb-swap = <0>;
+		qcom,mdss-pan-dsi-data-lanes = <1 1 1 1>;
+		qcom,mdss-pan-dsi-dlane-swap = <0>;
+		qcom,mdss-pan-dsi-t-clk = <0x22 0x36>;
+		qcom,mdss-pan-dsi-stream = <0>;
+		qcom,mdss-pan-dsi-mdp-tr = <0x0>;
+		qcom,mdss-pan-dsi-dma-tr = <0x04>;
+		qcom,mdss-pan-dsi-frame-rate = <60>;
+		qcom,mdss-pan-clk-rate = <899000000>;
 		qcom,panel-phy-regulatorSettings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
-		qcom,mdss-dsi-panel-timings = [
+		qcom,panel-phy-timingSettings = [
 			E5 38 26 00 69 72
 			2B 3B 41 03 04 00];
 		qcom,panel-phy-strengthCtrl = [
@@ -61,7 +60,7 @@
 			00 c2 45 00 00 00 00 01 75 /* lane2 config */
 			00 c2 45 00 00 00 00 01 75 /* lane3 config */
 			00 02 45 00 00 00 00 01 97]; /* Clk ln config */
-		qcom,mdss-dsi-on-command = [
+		qcom,panel-on-cmds = [
 			29 01 00 00 00 00 02 b0 04  // changed it to 29
 			05 01 00 00 00 00 02 00 00
 			05 01 00 00 00 00 02 00 00
@@ -128,50 +127,48 @@
 
 			05 01 00 00 00 00 02 29 00
 			05 01 00 00 78 00 02 11 00];
-		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
-		qcom,mdss-dsi-off-command = [
+		qcom,on-cmds-dsi-state = "DSI_LP_MODE";
+		qcom,panel-off-cmds = [
 			05 01 00 00 14 00 02 28 00
 			05 01 00 00 64 00 02 10 00];
-		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+		qcom,off-cmds-dsi-state = "DSI_HS_MODE";
 	};
 
-	dsi_jdi_1080_vid: qcom,mdss_dsi_jdi_video {
-		qcom,mdss-dsi-panel-name = "JDI 1080p video mode dsi panel";
-		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
-		qcom,mdss-dsi-panel-type = "dsi_video_mode";
+	qcom,mdss_dsi_jdi_video {
+		compatible = "qcom,mdss-dsi-panel";
+		label = "JDI 1080p video mode dsi panel";
+		status = "disable";
+		qcom,dsi-ctrl-phandle = <&mdss_dsi0>;
 		qcom,enable-gpio = <&msmgpio 58 0>;
 		qcom,rst-gpio = <&pm8941_gpios 19 0>;
-		qcom,mdss-dsi-virtual-channel-id = <2>;
-		qcom,mdss-dsi-panel-width = <1080>;
-                qcom,mdss-dsi-panel-height = <1920>;
-		qcom,mdss-dsi-bpp = <24>;
-		qcom,mdss-dsi-panel-destination = "display_1";
-		qcom,mdss-panel-porch-values = <100 4 90 4 1 2>;
-		qcom,mdss-panel-underflow-clr = <0xff>;
-		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
-		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-panel-dsi-mode = <0>;
-		qcom,mdss-dsi-h-sync-pulse = <0>;
-		qcom,mdss-panel-dsi-h-power-stop = <0 0 0>;
-		qcom,mdss-panel-dsi-bllp-power-stop = <1 1>;
-		qcom,mdss-panel-dsi-traffic-mode = <1>;
-		qcom,mdss-panel-dsi-dst-format = <3>;
-		qcom,mdss-panel-dsi-vc = <0>;
-		qcom,mdss-panel-dsi-rgb-swap = <0>;
-		qcom,mdss-panel-dsi-data-lanes = <1 1 1 1>;
-		qcom,mdss-panel-dsi-dlane-swap = <0>;
-		qcom,mdss-panel-dsi-t-clk = <0x2C 0x0A>;
-		qcom,mdss-dsi-t-clk-pre = <0x2C>;
-		qcom,mdss-dsi-t-clk-post = <0x0A>;
-		qcom,mdss-dsi-stream = <0>;
-		qcom,mdss-dsi-mdp-trigger = <0x0>;
-		qcom,mdss-dsi-dma-trigger = <0x04>;
-		qcom,mdss-dsi-panel-framerate = <53>;
-		qcom,mdss-panel-clk-rate = <780689360>;
+		qcom,mdss-pan-id = <2>;
+		qcom,mdss-pan-res = <1080 1920>;
+		qcom,mdss-pan-bpp = <24>;
+		qcom,mdss-pan-dest = "display_1";
+		qcom,mdss-pan-porch-values = <100 4 90 4 1 2>;
+		qcom,mdss-pan-underflow-clr = <0xff>;
+		qcom,mdss-pan-bl-ctrl = "bl_ctrl_wled";
+		qcom,mdss-pan-bl-levels = <1 255>;
+		qcom,mdss-pan-dsi-mode = <0>;
+		qcom,mdss-pan-dsi-h-pulse-mode = <0>;
+		qcom,mdss-pan-dsi-h-power-stop = <0 0 0>;
+		qcom,mdss-pan-dsi-bllp-power-stop = <1 1>;
+		qcom,mdss-pan-dsi-traffic-mode = <1>;
+		qcom,mdss-pan-dsi-dst-format = <3>;
+		qcom,mdss-pan-dsi-vc = <0>;
+		qcom,mdss-pan-dsi-rgb-swap = <0>;
+		qcom,mdss-pan-dsi-data-lanes = <1 1 1 1>;
+		qcom,mdss-pan-dsi-dlane-swap = <0>;
+		qcom,mdss-pan-dsi-t-clk = <0x2C 0x0A>;
+		qcom,mdss-pan-dsi-stream = <0>;
+		qcom,mdss-pan-dsi-mdp-tr = <0x0>;
+		qcom,mdss-pan-dsi-dma-tr = <0x04>;
+		qcom,mdss-pan-dsi-frame-rate = <53>;
+		qcom,mdss-pan-clk-rate = <780689360>;
 		qcom,panel-phy-regulatorSettings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
-		qcom,mdss-dsi-panel-timings = [
+		qcom,panel-phy-timingSettings = [
 			cc 31 21 00 5f 68
 			26 34 50 03 04 00];
 		qcom,panel-phy-strengthCtrl = [
@@ -185,7 +182,7 @@
 			00 c2 45 00 00 00 00 01 75 /* lane2 config */
 			00 c2 45 00 00 00 00 01 75 /* lane3 config */
 			00 02 45 00 00 00 00 01 97]; /* Clk ln config */
-		qcom,mdss-dsi-on-command = [
+		qcom,panel-on-cmds = [
 			15 01 00 00 00 00 02 ff 10
 			15 01 00 00 00 00 02 bb 03
 			39 01 00 00 00 00 06
@@ -583,57 +580,55 @@
 			2b 00 00 07 7f
 			05 01 00 00 78 00 01 11
 			05 01 00 00 00 00 01 29];
-		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
-		qcom,mdss-dsi-off-command = [
+		qcom,on-cmds-dsi-state = "DSI_LP_MODE";
+		qcom,panel-off-cmds = [
 			15 01 00 00 00 00 02 ff 10
 			05 01 00 00 32 00 01 28
 			05 01 00 00 64 00 01 10];
-		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+		qcom,off-cmds-dsi-state = "DSI_HS_MODE";
 	};
 
-	dsi_jdi_command: qcom,mdss_dsi_jdi_command {
-		qcom,mdss-dsi-panel-name = "JDI 1080p command mode dsi panel";
-		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
-		qcom,mdss-dsi-panel-type = "dsi_video_mode";
+	qcom,mdss_dsi_jdi_command {
+		compatible = "qcom,mdss-dsi-panel";
+		label = "JDI 1080p command mode dsi panel";
+		status = "disable";
+		qcom,dsi-ctrl-phandle = <&mdss_dsi0>;
 		qcom,enable-gpio = <&msmgpio 58 0>;
 		qcom,rst-gpio = <&pm8941_gpios 19 0>;
 		qcom,te-gpio = <&msmgpio 12 0>;
-		qcom,mdss-dsi-virtual-channel-id = <3>;
-		qcom,mdss-dsi-panel-width = <1920>;
-                qcom,mdss-dsi-panel-height = <1920>;
-		qcom,mdss-dsi-bpp = <24>;
-		qcom,mdss-dsi-panel-destination = "display_1";
-		qcom,mdss-panel-porch-values = <2 2 4 2 2 2>;
-		qcom,mdss-panel-underflow-clr = <0xff>;
-		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
-		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-panel-dsi-mode = <1>;
+		qcom,mdss-pan-id = <3>;
+		qcom,mdss-pan-res = <1080 1920>;
+		qcom,mdss-pan-bpp = <24>;
+		qcom,mdss-pan-dest = "display_1";
+		qcom,mdss-pan-porch-values = <2 2 4 2 2 2>;
+		qcom,mdss-pan-underflow-clr = <0xff>;
+		qcom,mdss-pan-bl-ctrl = "bl_ctrl_wled";
+		qcom,mdss-pan-bl-levels = <1 255>;
+		qcom,mdss-pan-dsi-mode = <1>;
 		qcom,mdss-vsync-enable = <1>;
 		qcom,mdss-hw-vsync-mode = <1>;
-		qcom,mdss-dsi-h-sync-pulse = <0>;
-		qcom,mdss-panel-dsi-h-power-stop = <0 0 0>;
-		qcom,mdss-panel-dsi-bllp-power-stop = <1 1>;
-		qcom,mdss-panel-dsi-traffic-mode = <1>;
-		qcom,mdss-panel-dsi-dst-format = <8>;
-		qcom,mdss-panel-dsi-vc = <0>;
-		qcom,mdss-panel-dsi-rgb-swap = <0>;
-		qcom,mdss-panel-dsi-data-lanes = <1 1 1 1>;
-		qcom,mdss-panel-dsi-dlane-swap = <0>;
-		qcom,mdss-panel-dsi-t-clk = <0x35 0x1E>;
-                qcom,mdss-dsi-t-clk-pre = <0x35>;
-                qcom,mdss-dsi-t-clk-post = <0x1E>;
-		qcom,mdss-dsi-stream = <0>;
-		qcom,mdss-dsi-mdp-trigger = <0x0>;
-		qcom,mdss-dsi-dma-trigger = <0x04>;
-		qcom,mdss-dsi-panel-framerate = <64>;
-		qcom,mdss-panel-te-sel = <1>;
-		qcom,mdss-panel-wr-mem-continue = <0x3c>;
-		qcom,mdss-panel-wr-mem-start = <0x2c>;
-		qcom,mdss-panel-insert-dcs-cmd = <1>;
+		qcom,mdss-pan-dsi-h-pulse-mode = <0>;
+		qcom,mdss-pan-dsi-h-power-stop = <0 0 0>;
+		qcom,mdss-pan-dsi-bllp-power-stop = <1 1>;
+		qcom,mdss-pan-dsi-traffic-mode = <1>;
+		qcom,mdss-pan-dsi-dst-format = <8>;
+		qcom,mdss-pan-dsi-vc = <0>;
+		qcom,mdss-pan-dsi-rgb-swap = <0>;
+		qcom,mdss-pan-dsi-data-lanes = <1 1 1 1>;
+		qcom,mdss-pan-dsi-dlane-swap = <0>;
+		qcom,mdss-pan-dsi-t-clk = <0x35 0x1E>;
+		qcom,mdss-pan-dsi-stream = <0>;
+		qcom,mdss-pan-dsi-mdp-tr = <0x0>;
+		qcom,mdss-pan-dsi-dma-tr = <0x04>;
+		qcom,mdss-pan-dsi-frame-rate = <64>;
+		qcom,mdss-pan-te-sel = <1>;
+		qcom,mdss-pan-wr-mem-continue = <0x3c>;
+		qcom,mdss-pan-wr-mem-start = <0x2c>;
+		qcom,mdss-pan-insert-dcs-cmd = <1>;
 		qcom,panel-phy-regulatorSettings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
-		qcom,mdss-dsi-panel-timings = [
+		qcom,panel-phy-timingSettings = [
 			c1 3d 34 00 58 4d
 			36 3f 53 03 04 00];
 		qcom,panel-phy-strengthCtrl = [
@@ -647,7 +642,7 @@
 			00 c2 45 00 00 00 00 01 75 /* lane2 config */
 			00 c2 45 00 00 00 00 01 75 /* lane3 config */
 			00 02 45 00 00 00 00 01 97]; /* Clk ln config */
-		qcom,mdss-dsi-on-command = [
+		qcom,panel-on-cmds = [
 			15 01 00 00 00 00 02 ff 10
 			15 01 00 00 00 00 02 bb 10
 			15 01 00 00 00 00 02 50 00
@@ -1043,62 +1038,58 @@
 			2b 00 00 07 7f
 			05 01 00 00 78 00 01 11
 			05 01 00 00 00 00 01 29];
-		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
-		qcom,mdss-dsi-off-command = [
+		qcom,on-cmds-dsi-state = "DSI_LP_MODE";
+		qcom,panel-off-cmds = [
 			15 01 00 00 00 00 00 02 ff 10
 			05 01 00 00 32 00 01 28
 			05 01 00 00 64 00 01 10];
-		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+		qcom,off-cmds-dsi-state = "DSI_HS_MODE";
 	};
 
-	dsi_jdi_command_ors: qcom,mdss_dsi_jdi_command_ors {
-		
-		qcom,mdss-dsi-panel-name = "JDI 1080p command mode dsi panel";
-		
-		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
-		qcom,mdss-dsi-panel-type = "dsi_video_mode";
+	qcom,mdss_dsi_jdi_command_ors {
+		compatible = "qcom,mdss-dsi-panel";
+		label = "JDI 1080p command mode dsi panel";
+		status = "disable";
+		qcom,dsi-ctrl-phandle = <&mdss_dsi0>;
 		qcom,enable-gpio = <&msmgpio 58 0>;
 		qcom,rst-gpio = <&pm8941_gpios 19 0>;
 		qcom,te-gpio = <&msmgpio 12 0>;
-		qcom,mdss-dsi-virtual-channel-id = <5>;
-		qcom,mdss-dsi-panel-width = <1080>;
-                qcom,mdss-dsi-panel-height = <1920>;
-		qcom,mdss-dsi-bpp = <24>;
-		qcom,mdss-panel-width = <62>;
-		qcom,mdss-panel-height = <110>;
-		qcom,mdss-dsi-panel-destination = "display_1";
-		qcom,mdss-panel-porch-values = <2 2 4 2 2 2>;
-		qcom,mdss-panel-underflow-clr = <0xff>;
-		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
-		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-dsi-bl-max-level = <4095>;
-		qcom,mdss-panel-dsi-mode = <1>;
+		qcom,mdss-pan-id = <5>;
+		qcom,mdss-pan-res = <1080 1920>;
+		qcom,mdss-pan-bpp = <24>;
+		qcom,mdss-pan-width = <62>;
+		qcom,mdss-pan-height = <110>;
+		qcom,mdss-pan-dest = "display_1";
+		qcom,mdss-pan-porch-values = <2 2 4 2 2 2>;
+		qcom,mdss-pan-underflow-clr = <0xff>;
+		qcom,mdss-pan-bl-ctrl = "bl_ctrl_wled";
+		qcom,mdss-pan-bl-levels = <1 255>;
+		qcom,mdss-pan-dsi-mode = <1>;
 		qcom,mdss-vsync-enable = <1>;
 		qcom,mdss-hw-vsync-mode = <1>;
-		qcom,mdss-dsi-h-sync-pulse = <0>;
-		qcom,mdss-panel-dsi-h-power-stop = <0 0 0>;
-		qcom,mdss-panel-dsi-bllp-power-stop = <1 1>;
-		qcom,mdss-panel-dsi-traffic-mode = <1>;
-		qcom,mdss-panel-dsi-dst-format = <8>;
-		qcom,mdss-panel-dsi-vc = <0>;
-		qcom,mdss-panel-dsi-rgb-swap = <0>;
-		qcom,mdss-panel-dsi-data-lanes = <1 1 1 1>;
-		qcom,mdss-panel-dsi-dlane-swap = <0>;
-                qcom,mdss-dsi-t-clk-pre = <0x35>;
-                qcom,mdss-dsi-t-clk-post = <0x1E>;
-		qcom,mdss-dsi-stream = <0>;
-		qcom,mdss-dsi-mdp-trigger = <0x0>;
-		qcom,mdss-dsi-dma-trigger = <0x04>;
-		qcom,mdss-dsi-panel-framerate = <60>;
-		qcom,mdss-panel-clk-rate = <804667392>;
-		qcom,mdss-panel-te-sel = <1>;
-		qcom,mdss-panel-wr-mem-continue = <0x3c>;
-		qcom,mdss-panel-wr-mem-start = <0x2c>;
-		qcom,mdss-panel-insert-dcs-cmd = <1>;
+		qcom,mdss-pan-dsi-h-pulse-mode = <0>;
+		qcom,mdss-pan-dsi-h-power-stop = <0 0 0>;
+		qcom,mdss-pan-dsi-bllp-power-stop = <1 1>;
+		qcom,mdss-pan-dsi-traffic-mode = <1>;
+		qcom,mdss-pan-dsi-dst-format = <8>;
+		qcom,mdss-pan-dsi-vc = <0>;
+		qcom,mdss-pan-dsi-rgb-swap = <0>;
+		qcom,mdss-pan-dsi-data-lanes = <1 1 1 1>;
+		qcom,mdss-pan-dsi-dlane-swap = <0>;
+		qcom,mdss-pan-dsi-t-clk = <0x35 0x1E>;
+		qcom,mdss-pan-dsi-stream = <0>;
+		qcom,mdss-pan-dsi-mdp-tr = <0x0>;
+		qcom,mdss-pan-dsi-dma-tr = <0x04>;
+		qcom,mdss-pan-dsi-frame-rate = <60>;
+		qcom,mdss-pan-clk-rate = <804667392>;
+		qcom,mdss-pan-te-sel = <1>;
+		qcom,mdss-pan-wr-mem-continue = <0x3c>;
+		qcom,mdss-pan-wr-mem-start = <0x2c>;
+		qcom,mdss-pan-insert-dcs-cmd = <1>;
 		qcom,panel-phy-regulatorSettings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
-		qcom,mdss-dsi-panel-timings = [
+		qcom,panel-phy-timingSettings = [
 			c1 3d 34 00 58 4d
 			36 3f 53 03 04 00];
 		qcom,panel-phy-strengthCtrl = [
@@ -1112,7 +1103,7 @@
 			00 c2 45 00 00 00 00 01 75 /* lane2 config */
 			00 c2 45 00 00 00 00 01 75 /* lane3 config */
 			00 02 45 00 00 00 00 01 97]; /* Clk ln config */
-		qcom,mdss-dsi-on-command = [
+		qcom,panel-on-cmds = [
 			15 01 00 00 00 00 02 00 00
 			39 01 00 00 00 00 05
 			FF 19 02 01 00
@@ -1187,59 +1178,57 @@
 			2B 00 00 07 7F
 			05 01 00 00 78 00 01 11
 			05 01 00 00 00 00 01 29];
-		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
-		qcom,mdss-dsi-off-command = [
+		qcom,on-cmds-dsi-state = "DSI_LP_MODE";
+		qcom,panel-off-cmds = [
 			05 01 00 00 32 00 01 28
 			05 01 00 00 64 00 01 10];
-		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+		qcom,off-cmds-dsi-state = "DSI_HS_MODE";
 	};
 
-	dsi_jdi_command_ors_j1: qcom,mdss_dsi_jdi_command_ors_j1 {
-		qcom,mdss-dsi-panel-name = "JDI(J1) 1080p command mode dsi panel";
-		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
-		qcom,mdss-dsi-panel-type = "dsi_video_mode";
+	qcom,mdss_dsi_jdi_command_ors_j1 {
+		compatible = "qcom,mdss-dsi-panel";
+		label = "JDI(J1) 1080p command mode dsi panel";
+		status = "disable";
+		qcom,dsi-ctrl-phandle = <&mdss_dsi0>;
 		qcom,enable-gpio = <&msmgpio 58 0>;
 		qcom,rst-gpio = <&pm8941_gpios 19 0>;
 		qcom,te-gpio = <&msmgpio 12 0>;
-		qcom,mdss-dsi-virtual-channel-id = <5>;
-		qcom,mdss-dsi-panel-width = <1080>;
-                qcom,mdss-dsi-panel-height = <1920>;
-		qcom,mdss-dsi-bpp = <24>;
-		qcom,mdss-panel-width = <62>;
-		qcom,mdss-panel-height = <110>;
-		qcom,mdss-dsi-panel-destination = "display_1";
-		qcom,mdss-panel-porch-values = <2 2 4 2 2 2>;
-		qcom,mdss-panel-underflow-clr = <0xff>;
-		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
-		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-panel-dsi-mode = <1>;
+		qcom,mdss-pan-id = <5>;
+		qcom,mdss-pan-res = <1080 1920>;
+		qcom,mdss-pan-bpp = <24>;
+		qcom,mdss-pan-width = <62>;
+		qcom,mdss-pan-height = <110>;
+		qcom,mdss-pan-dest = "display_1";
+		qcom,mdss-pan-porch-values = <2 2 4 2 2 2>;
+		qcom,mdss-pan-underflow-clr = <0xff>;
+		qcom,mdss-pan-bl-ctrl = "bl_ctrl_wled";
+		qcom,mdss-pan-bl-levels = <1 255>;
+		qcom,mdss-pan-dsi-mode = <1>;
 		qcom,mdss-vsync-enable = <1>;
 		qcom,mdss-hw-vsync-mode = <1>;
-		qcom,mdss-dsi-h-sync-pulse = <0>;
-		qcom,mdss-panel-dsi-h-power-stop = <0 0 0>;
-		qcom,mdss-panel-dsi-bllp-power-stop = <1 1>;
-		qcom,mdss-panel-dsi-traffic-mode = <1>;
-		qcom,mdss-panel-dsi-dst-format = <8>;
-		qcom,mdss-panel-dsi-vc = <0>;
-		qcom,mdss-panel-dsi-rgb-swap = <0>;
-		qcom,mdss-panel-dsi-data-lanes = <1 1 1 1>;
-		qcom,mdss-panel-dsi-dlane-swap = <0>;
-		qcom,mdss-panel-dsi-t-clk = <0x35 0x1E>;
-		qcom,mdss-dsi-t-clk-pre = <0x35>;
-                qcom,mdss-dsi-t-clk-post = <0x1E>;
-		qcom,mdss-dsi-stream = <0>;
-		qcom,mdss-dsi-mdp-trigger = <0x0>;
-		qcom,mdss-dsi-dma-trigger = <0x04>;
-		qcom,mdss-dsi-panel-framerate = <60>;
-		qcom,mdss-panel-clk-rate = <804667392>;
-		qcom,mdss-panel-te-sel = <1>;
-		qcom,mdss-panel-wr-mem-continue = <0x3c>;
-		qcom,mdss-panel-wr-mem-start = <0x2c>;
-		qcom,mdss-panel-insert-dcs-cmd = <1>;
+		qcom,mdss-pan-dsi-h-pulse-mode = <0>;
+		qcom,mdss-pan-dsi-h-power-stop = <0 0 0>;
+		qcom,mdss-pan-dsi-bllp-power-stop = <1 1>;
+		qcom,mdss-pan-dsi-traffic-mode = <1>;
+		qcom,mdss-pan-dsi-dst-format = <8>;
+		qcom,mdss-pan-dsi-vc = <0>;
+		qcom,mdss-pan-dsi-rgb-swap = <0>;
+		qcom,mdss-pan-dsi-data-lanes = <1 1 1 1>;
+		qcom,mdss-pan-dsi-dlane-swap = <0>;
+		qcom,mdss-pan-dsi-t-clk = <0x35 0x1E>;
+		qcom,mdss-pan-dsi-stream = <0>;
+		qcom,mdss-pan-dsi-mdp-tr = <0x0>;
+		qcom,mdss-pan-dsi-dma-tr = <0x04>;
+		qcom,mdss-pan-dsi-frame-rate = <60>;
+		qcom,mdss-pan-clk-rate = <804667392>;
+		qcom,mdss-pan-te-sel = <1>;
+		qcom,mdss-pan-wr-mem-continue = <0x3c>;
+		qcom,mdss-pan-wr-mem-start = <0x2c>;
+		qcom,mdss-pan-insert-dcs-cmd = <1>;
 		qcom,panel-phy-regulatorSettings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
-		qcom,mdss-dsi-panel-timings = [
+		qcom,panel-phy-timingSettings = [
 			c1 3d 34 00 58 4d
 			36 3f 53 03 04 00];
 		qcom,panel-phy-strengthCtrl = [
@@ -1253,7 +1242,7 @@
 			00 c2 45 00 00 00 00 01 75 /* lane2 config */
 			00 c2 45 00 00 00 00 01 75 /* lane3 config */
 			00 02 45 00 00 00 00 01 97]; /* Clk ln config */
-		qcom,mdss-dsi-on-command = [
+		qcom,panel-on-cmds = [
 			15 01 00 00 00 00 02 00 00
 			39 01 00 00 00 00 05
 			FF 19 02 01 00
@@ -1329,10 +1318,10 @@
 			2B 00 00 07 7F
 			05 01 00 00 78 00 01 11
 			05 01 00 00 00 00 01 29];
-		qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
-		qcom,mdss-dsi-off-command = [
+		qcom,on-cmds-dsi-state = "DSI_LP_MODE";
+		qcom,panel-off-cmds = [
 			05 01 00 00 32 00 01 28
 			05 01 00 00 64 00 01 10];
-		qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+		qcom,off-cmds-dsi-state = "DSI_HS_MODE";
 	};
 };
