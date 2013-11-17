@@ -28,7 +28,7 @@
 	};
 
 	qcom,mdss_dsi@fd922800 {
-                qcom,dsi-pref-prim-pan = <&dsi_jdi_command>;
+                qcom,dsi-pref-prim-pan = <&dsi_jdi_command_ors>;
 		status = "ok";
 		qcom,cont-splash-enabled;
         };
