@@ -36,7 +36,7 @@
 
 	qcom,mdss_dsi@fd922800 {
 	        status = "ok";
-                qcom,cont-splash-enabled = <1>;
+                
 		qcom,platform-regulator-settings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];

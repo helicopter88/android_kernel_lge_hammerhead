@@ -43,7 +43,7 @@
                         00 c2 45 00 00 00 00 01 75 /* lane3 config */
                         00 02 45 00 00 00 00 01 97]; /* Clk ln config */
 		status = "ok";
-		qcom,cont-splash-enabled = <1>;
+		
                 qcom,dsi-pref-prim-pan = <&dsi_jdi_command_ors>;
         };
 };
