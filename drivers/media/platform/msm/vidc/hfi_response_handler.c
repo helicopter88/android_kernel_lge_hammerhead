@@ -78,6 +78,26 @@ static enum vidc_status hfi_map_err_status(int hfi_err)
 	return vidc_err;
 }
 
+static int validate_session_pkt(struct list_head *sessions,
+		struct hal_session *sess, struct mutex *session_lock)
+{
+	struct hal_session *session;
+	int invalid = 1;
+	if (session_lock) {
+		mutex_lock(session_lock);
+		list_for_each_entry(session, sessions, list) {
+			if (session == sess) {
+				invalid = 0;
+				break;
+			}
+		}
+		mutex_unlock(session_lock);
+	}
+	if (invalid)
+		dprintk(VIDC_WARN, "Invalid session from FW: %p\n", sess);
+	return invalid;
+}
+
 static void hfi_process_sess_evt_seq_changed(
 		msm_vidc_callback callback, u32 device_id,
 		struct hfi_msg_event_notify_packet *pkt)
@@ -162,10 +182,9 @@ static void hfi_process_evt_release_buffer_ref(
 	data = (struct hfi_msg_release_buffer_ref_event_packet *)
 				pkt->rg_ext_event_data;
 
-
 	cmd_done.device_id = device_id;
-	cmd_done.session_id =
-		((struct hal_session *)data->output_tag)->session_id;
+	cmd_done.session_id = ((struct hal_session *) pkt->session_id)->
+		session_id;
 	cmd_done.status = VIDC_ERR_NONE;
 	cmd_done.size = sizeof(struct msm_vidc_cb_event);
 
@@ -193,12 +212,26 @@ static void hfi_process_session_error(
 	cmd_done.device_id = device_id;
 	cmd_done.session_id = ((struct hal_session *) pkt->session_id)->
 		session_id;
-	callback(SESSION_ERROR, &cmd_done);
+	dprintk(VIDC_INFO, "Received : SESSION_ERROR with event id : %d\n",
+		pkt->event_data1);
+	switch (pkt->event_data1) {
+	case HFI_ERR_SESSION_INVALID_SCALE_FACTOR:
+	case HFI_ERR_SESSION_UNSUPPORT_BUFFERTYPE:
+	case HFI_ERR_SESSION_UNSUPPORTED_SETTING:
+		dprintk(VIDC_INFO, "Non Fatal : HFI_EVENT_SESSION_ERROR\n");
+		break;
+	default:
+		dprintk(VIDC_ERR, "HFI_EVENT_SESSION_ERROR\n");
+		callback(SESSION_ERROR, &cmd_done);
+		break;
+	}
 }
 static void hfi_process_event_notify(
 		msm_vidc_callback callback, u32 device_id,
-		struct hfi_msg_event_notify_packet *pkt)
+		struct hfi_msg_event_notify_packet *pkt,
+		struct list_head *sessions, struct mutex *session_lock)
 {
+	struct hal_session *sess = NULL;
 	dprintk(VIDC_DBG, "RECVD:EVENT_NOTIFY");
 
 	if (!callback || !pkt ||
@@ -206,6 +239,7 @@ static void hfi_process_event_notify(
 		dprintk(VIDC_ERR, "Invalid Params");
 		return;
 	}
+	sess = (struct hal_session *)pkt->session_id;
 
 	switch (pkt->event_id) {
 	case HFI_EVENT_SYS_ERROR:
@@ -214,12 +248,15 @@ static void hfi_process_event_notify(
 		hfi_process_sys_error(callback, device_id);
 		break;
 	case HFI_EVENT_SESSION_ERROR:
-		dprintk(VIDC_ERR, "HFI_EVENT_SESSION_ERROR");
-		hfi_process_session_error(callback, device_id, pkt);
+		dprintk(VIDC_INFO, "HFI_EVENT_SESSION_ERROR");
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_error(callback, device_id, pkt);
 		break;
 	case HFI_EVENT_SESSION_SEQUENCE_CHANGED:
 		dprintk(VIDC_INFO, "HFI_EVENT_SESSION_SEQUENCE_CHANGED");
-		hfi_process_sess_evt_seq_changed(callback, device_id, pkt);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_sess_evt_seq_changed(callback,
+				device_id, pkt);
 		break;
 	case HFI_EVENT_SESSION_PROPERTY_CHANGED:
 		dprintk(VIDC_INFO, "HFI_EVENT_SESSION_PROPERTY_CHANGED");
@@ -561,6 +598,12 @@ enum vidc_status hfi_process_sess_init_done_prop_read(
 					case HFI_BUFFER_MODE_DYNAMIC:
 						sess_init_done->alloc_mode_out
 						|= HAL_BUFFER_MODE_DYNAMIC;
+						break;
+					}
+					if (i >= 32) {
+						dprintk(VIDC_ERR,
+						"%s - num_entries: %d from f/w seems suspect\n",
+						__func__, prop->num_entries);
 						break;
 					}
 				}
@@ -914,6 +957,7 @@ static void hfi_process_session_ftb_done(
 		data_done.output_done.packet_buffer1 = pkt->packet_buffer;
 		data_done.output_done.extra_data_buffer =
 			pkt->extra_data_buffer;
+		data_done.output_done.buffer_type = HAL_BUFFER_OUTPUT;
 		dprintk(VIDC_DBG, "FBD: Received buf: %p, of len: %d\n",
 				   pkt->packet_buffer, pkt->filled_len);
 	} else if (is_decoder == 1) {
@@ -1166,7 +1210,7 @@ void hfi_process_sys_property_info(
 				version[i] = ' ';
 		}
 		version[i] = '\0';
-		dprintk(VIDC_INFO, "F/W version: %s\n", version);
+		dprintk(VIDC_DBG, "F/W version: %s\n", version);
 	}
 
 	smem_table_ptr = smem_get_entry(SMEM_IMAGE_VERSION_TABLE,
@@ -1179,9 +1223,11 @@ void hfi_process_sys_property_info(
 
 u32 hfi_process_msg_packet(
 		msm_vidc_callback callback, u32 device_id,
-		struct vidc_hal_msg_pkt_hdr *msg_hdr)
+		struct vidc_hal_msg_pkt_hdr *msg_hdr,
+		struct list_head *sessions, struct mutex *session_lock)
 {
 	u32 rc = 0;
+	struct hal_session *sess = NULL;
 	if (!callback || !msg_hdr || msg_hdr->size <
 		VIDC_IFACEQ_MIN_PKT_SIZE) {
 		dprintk(VIDC_ERR, "hal_process_msg_packet:bad"
@@ -1192,10 +1238,14 @@ u32 hfi_process_msg_packet(
 
 	dprintk(VIDC_INFO, "Received: 0x%x in ", msg_hdr->packet);
 	rc = (u32) msg_hdr->packet;
+	sess = (struct hal_session *)((struct
+			vidc_hal_session_cmd_pkt*) msg_hdr)->session_id;
+
 	switch (msg_hdr->packet) {
 	case HFI_MSG_EVENT_NOTIFY:
 		hfi_process_event_notify(callback, device_id,
-			(struct hfi_msg_event_notify_packet *) msg_hdr);
+			(struct hfi_msg_event_notify_packet *) msg_hdr,
+			sessions, session_lock);
 		break;
 	case  HFI_MSG_SYS_INIT_DONE:
 		hfi_process_sys_init_done(callback, device_id,
@@ -1203,11 +1253,13 @@ u32 hfi_process_msg_packet(
 					msg_hdr);
 		break;
 	case HFI_MSG_SYS_IDLE:
+	case HFI_MSG_SYS_PC_PREP_DONE:
 		break;
 	case HFI_MSG_SYS_SESSION_INIT_DONE:
-		hfi_process_session_init_done(callback, device_id,
-			(struct hfi_msg_sys_session_init_done_packet *)
-					msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_init_done(callback, device_id,
+				(struct hfi_msg_sys_session_init_done_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SYS_PROPERTY_INFO:
 		hfi_process_sys_property_info(
@@ -1215,68 +1267,81 @@ u32 hfi_process_msg_packet(
 			msg_hdr);
 		break;
 	case HFI_MSG_SYS_SESSION_END_DONE:
-		hfi_process_session_end_done(callback, device_id,
-			(struct hfi_msg_sys_session_end_done_packet *)
-					msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_end_done(callback, device_id,
+				(struct hfi_msg_sys_session_end_done_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_LOAD_RESOURCES_DONE:
-		hfi_process_session_load_res_done(callback, device_id,
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_load_res_done(callback, device_id,
 			(struct hfi_msg_session_load_resources_done_packet *)
-					msg_hdr);
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_START_DONE:
-		hfi_process_session_start_done(callback, device_id,
-			(struct hfi_msg_session_start_done_packet *)
-					msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_start_done(callback, device_id,
+				(struct hfi_msg_session_start_done_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_STOP_DONE:
-		hfi_process_session_stop_done(callback, device_id,
-			(struct hfi_msg_session_stop_done_packet *)
-					msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_stop_done(callback, device_id,
+				(struct hfi_msg_session_stop_done_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_EMPTY_BUFFER_DONE:
-		hfi_process_session_etb_done(callback, device_id,
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_etb_done(callback, device_id,
 			(struct hfi_msg_session_empty_buffer_done_packet *)
-					msg_hdr);
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_FILL_BUFFER_DONE:
-		hfi_process_session_ftb_done(callback, device_id, msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_ftb_done(callback, device_id,
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_FLUSH_DONE:
-		hfi_process_session_flush_done(callback, device_id,
-			(struct hfi_msg_session_flush_done_packet *)
-					msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_flush_done(callback, device_id,
+				(struct hfi_msg_session_flush_done_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_PROPERTY_INFO:
-		hfi_process_session_prop_info(callback, device_id,
-			(struct hfi_msg_session_property_info_packet *)
-					msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_prop_info(callback, device_id,
+				(struct hfi_msg_session_property_info_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_RELEASE_RESOURCES_DONE:
-		hfi_process_session_rel_res_done(callback, device_id,
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_rel_res_done(callback, device_id,
 			(struct hfi_msg_session_release_resources_done_packet *)
-					msg_hdr);
+						msg_hdr);
 		break;
 	case HFI_MSG_SYS_RELEASE_RESOURCE:
 		hfi_process_sys_rel_resource_done(callback, device_id,
 			(struct hfi_msg_sys_release_resource_done_packet *)
-			msg_hdr);
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_GET_SEQUENCE_HEADER_DONE:
-		hfi_process_session_get_seq_hdr_done(
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_get_seq_hdr_done(
 			callback, device_id, (struct
 			hfi_msg_session_get_sequence_header_done_packet*)
-			msg_hdr);
+						msg_hdr);
 		break;
 	case HFI_MSG_SESSION_RELEASE_BUFFERS_DONE:
-		hfi_process_session_rel_buf_done(
-			callback, device_id, (struct
-			hfi_msg_session_release_buffers_done_packet*)
-			msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_rel_buf_done(callback, device_id,
+			(struct hfi_msg_session_release_buffers_done_packet *)
+						msg_hdr);
 		break;
 	case HFI_MSG_SYS_SESSION_ABORT_DONE:
-		hfi_process_session_abort_done(callback, device_id, (struct
-			hfi_msg_sys_session_abort_done_packet*) msg_hdr);
+		if (!validate_session_pkt(sessions, sess, session_lock))
+			hfi_process_session_abort_done(callback, device_id,
+			(struct hfi_msg_sys_session_abort_done_packet *)
+						msg_hdr);
 		break;
 	default:
 		dprintk(VIDC_DBG, "UNKNOWN_MSG_TYPE : %d", msg_hdr->packet);
