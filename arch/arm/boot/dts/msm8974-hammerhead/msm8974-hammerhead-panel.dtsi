@@ -43,6 +43,7 @@
 		qcom,mdss-dsi-t-clk-pre = <0x22>;
 		qcom,mdss-dsi-t-clk-post = <0x36>;
 		qcom,mdss-dsi-stream = <0>;
+		qcom,cont-splash-enabled = <1>;
 		qcom,mdss-dsi-mdp-trigger = <0x0>;
 		qcom,mdss-dsi-dma-trigger = <0x04>;
 		qcom,mdss-dsi-panel-framerate = <60>;
@@ -132,6 +133,7 @@
 		qcom,mdss-dsi-panel-framerate = <60>;
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
+		qcom,cont-splash-enabled = <1>;
 		qcom,mdss-dsi-panel-width = <1080>;
 		qcom,mdss-dsi-panel-height = <1920>;
 		qcom,mdss-dsi-h-front-porch = <96>;
@@ -211,6 +213,7 @@
                 qcom,mdss-dsi-t-clk-pre = <0x35>;
                 qcom,mdss-dsi-t-clk-post = <0x1E>;
 		qcom,mdss-dsi-stream = <0>;
+		qcom,cont-splash-enabled = <1>;
 		qcom,mdss-dsi-mdp-trigger = <0x0>;
 		qcom,mdss-dsi-dma-trigger = <0x04>;
 		qcom,mdss-dsi-panel-framerate = <64>;
@@ -662,6 +665,7 @@
                 qcom,mdss-dsi-t-clk-pre = <0x35>;
                 qcom,mdss-dsi-t-clk-post = <0x1E>;
 		qcom,mdss-dsi-stream = <0>;
+		qcom,cont-splash-enabled = <1>;
 		qcom,mdss-dsi-mdp-trigger = <0x0>;
 		qcom,mdss-dsi-dma-trigger = <0x04>;
 		qcom,mdss-dsi-panel-framerate = <60>;
@@ -804,6 +808,7 @@
 		qcom,mdss-dsi-t-clk-pre = <0x35>;
                 qcom,mdss-dsi-t-clk-post = <0x1E>;
 		qcom,mdss-dsi-stream = <0>;
+		qcom,cont-splash-enabled = <1>;
 		qcom,mdss-dsi-mdp-trigger = <0x0>;
 		qcom,mdss-dsi-dma-trigger = <0x04>;
 		qcom,mdss-dsi-panel-framerate = <60>;
