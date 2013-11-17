@@ -44,7 +44,7 @@
 		qcom,mdss-dsi-dma-trigger = <0x04>;
 		qcom,mdss-dsi-panel-framerate = <60>;
 		qcom,mdss-panel-clk-rate = <899000000>;
-		qcom,panel-phy-regulatorSettings = [
+		qcom,platform-regulator-settings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
 		qcom,mdss-dsi-panel-timings = [
@@ -52,7 +52,7 @@
 			2B 3B 41 03 04 00];
 		qcom,platform-strength-ctrl = [
 			77 06];
-		qcom,platform-regulator-settings = [
+		qcom,platform-bist-ctrl = [
 			00 00 b1 ff           /* BIST Ctrl settings */
 			00 00];
 		qcom,platform-lane-config = [
@@ -228,15 +228,15 @@
 		qcom,mdss-panel-wr-mem-continue = <0x3c>;
 		qcom,mdss-panel-wr-mem-start = <0x2c>;
 		qcom,mdss-panel-insert-dcs-cmd = <1>;
-		qcom,panel-phy-regulatorSettings = [
+		qcom,platform-regulator-settings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
 		qcom,mdss-dsi-panel-timings = [
 			c1 3d 34 00 58 4d
 			36 3f 53 03 04 00];
-		qcom,panel-phy-strengthCtrl = [
+		qcom,platform-strength-ctrl = [
 			77 06];
-		qcom,platform-regulator-settings = [
+		qcom,platform-bist-ctrl = [
 			00 00 b1 ff           /* BIST Ctrl settings */
 			00 00];
 		qcom,platform-lane-config = [
@@ -294,7 +294,7 @@
 			15 01 00 00 00 00 02 9e c4
 			15 01 00 00 00 00 02 9f 02
 			15 01 00 00 00 00 02 a0 e7
-			15 01 00 00 00 00 02 a2 02
+		15 01 00 00 00 00 02 a2 02
 			15 01 00 00 00 00 02 a3 f1
 			15 01 00 00 00 00 02 a4 02
 			15 01 00 00 00 00 02 a5 f5
@@ -680,7 +680,13 @@
 		qcom,mdss-panel-dsi-dst-format = <8>;
 		qcom,mdss-panel-dsi-vc = <0>;
 		qcom,mdss-panel-dsi-rgb-swap = <0>;
-		qcom,mdss-panel-dsi-data-lanes = <1 1 1 1>;
+		qcom,mdss-dsi-lane-map = <0>;
+                qcom,mdss-dsi-bllp-eof-power-mode = <1>;
+                qcom,mdss-dsi-bllp-power-mode  = <1>;
+                qcom,mdss-dsi-lane-0-state = <1>;
+                qcom,mdss-dsi-lane-1-state = <1>;
+                qcom,mdss-dsi-lane-2-state = <1>;
+                qcom,mdss-dsi-lane-3-state = <1>;
 		qcom,mdss-panel-dsi-dlane-swap = <0>;
                 qcom,mdss-dsi-t-clk-pre = <0x35>;
                 qcom,mdss-dsi-t-clk-post = <0x1E>;
@@ -693,15 +699,15 @@
 		qcom,mdss-panel-wr-mem-continue = <0x3c>;
 		qcom,mdss-panel-wr-mem-start = <0x2c>;
 		qcom,mdss-panel-insert-dcs-cmd = <1>;
-		qcom,panel-phy-regulatorSettings = [
+		qcom,platform-regulator-settings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
 		qcom,mdss-dsi-panel-timings = [
 			c1 3d 34 00 58 4d
 			36 3f 53 03 04 00];
-		qcom,panel-phy-strengthCtrl = [
+		qcom,platform-strength-ctrl = [
 			bb 06];
-		qcom,platform-regulator-settings = [
+		qcom,platform-bist-ctrl = [
 			00 00 b1 ff           /* BIST Ctrl settings */
 			00 00];
 		qcom,platform-lane-config = [
@@ -834,15 +840,15 @@
 		qcom,mdss-panel-wr-mem-continue = <0x3c>;
 		qcom,mdss-panel-wr-mem-start = <0x2c>;
 		qcom,mdss-panel-insert-dcs-cmd = <1>;
-		qcom,panel-phy-regulatorSettings = [
+		qcom,platform-regulator-settings = [
 			03 01 01 00  /* Regualotor settings */
 			20 00 01];
 		qcom,mdss-dsi-panel-timings = [
 			c1 3d 34 00 58 4d
 			36 3f 53 03 04 00];
-		qcom,panel-phy-strengthCtrl = [
+		qcom,platform-strength-ctrl = [
 			bb 06];
-		qcom,platform-regulator-settings = [
+		qcom,platform-bist-ctrl = [
 			00 00 b1 ff           /* BIST Ctrl settings */
 			00 00];
 		qcom,platform-lane-config = [
