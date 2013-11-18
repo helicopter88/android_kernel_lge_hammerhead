@@ -20,7 +20,6 @@
 /include/ "msm8974-hammerhead-nfc.dtsi"
 /include/ "msm8974-hammerhead-regulator.dtsi"
 /include/ "msm8974-hammerhead-sensor.dtsi"
-/include/ "../msm8974-v2.dtsi"
 / {
 	aliases {
 		uart99 = &uart10;
@@ -49,7 +48,7 @@
 		qcom,mdss-ad-off = <0x0013100 0x00013300>;
 		qcom,mdss-pref-prim-intf = "dsi";
 		qcom,mdss_fb_primary {
-			qcom,memory-reservation-size = <0x1000000>;
+			qcom,memblock-reserve = <0x1000000>;
 		};
 	};
 
@@ -60,7 +59,7 @@
 		qcom,mdss-dsi-use-vdd-supply = <0>;
 	};
 
-	qcom,hdmi_tx@fd922100 {
+	qcom,mdss_hdmi_tx@fd922100 {
 		reg =	<0xfd922100 0x370>,
 		<0xfd922500 0x7C>,
 		<0xfc4b8000 0x60F0>;
@@ -156,6 +155,10 @@
 
 	qcom,msm-thermal {
 		qcom,limit-temp = <90>;
+	};
+
+	qcom,msm-vidc {
+		status = "ok";
 	};
 
 	bluesleep {
