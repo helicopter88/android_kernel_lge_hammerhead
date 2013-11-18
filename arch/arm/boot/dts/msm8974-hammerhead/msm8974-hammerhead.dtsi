@@ -20,7 +20,7 @@
 /include/ "msm8974-hammerhead-nfc.dtsi"
 /include/ "msm8974-hammerhead-regulator.dtsi"
 /include/ "msm8974-hammerhead-sensor.dtsi"
-
+/include/ "../msm8974-v2.dtsi"
 / {
 	aliases {
 		uart99 = &uart10;
@@ -68,74 +68,6 @@
 		status = "ok";
 	};
 	
-	qcom,vidc@fdc00000 {
-		
-                compatible = "qcom,msm-vidc";
-                reg = <0xfdc00000 0xff000>;
-                interrupts = <0 44 0>;
-                qcom,hfi = "venus";
-                qcom,has-ocmem;
-                qcom,max-hw-load = <1224450>; /* 4k @ 30 + 1080p @ 30*/
-        	qcom,vidc-ns-map = <0x40000000 0x40000000>;
-		qcom,load-freq-tbl = <979200 465000000>,
-			<783360 465000000>,
-			<489600 266670000>,
-			<244800 133330000>;
-		qcom,reg-presets = <0x80004 0x1>,
-			<0x80070 0x11FFF>,
-			<0x80074 0xA4>,
-			<0x800A8 0x1FFF>,
-			<0x80124 0x3>,
-			<0xE0020 0x5555556>,
-			<0xE0024 0x0>;
-		qcom,bus-ports = <1>;
-		qcom,enc-ocmem-ab-ib = <0 0>,
-			<138000 1034000>,
-			<414000 1034000>,
-			<940000 1034000>,
-			<1880000 2068000>,
-			<3008000 3309000>,
-			<3760000 4136000>,
-			<4468000 2457000>;
-		qcom,dec-ocmem-ab-ib = <0 0>,
-			<176000 519000>,
-			<456000 519000>,
-			<864000 519000>,
-			<1728000 1038000>,
-			<2766000 1661000>,
-			<3456000 2076000>,
-			<3662000 2198000>;
-		qcom,enc-ddr-ab-ib = <0 0>,
-			<120000 302000>,
-			<364000 302000>,
-			<804000 302000>,
-			<1608000 604000>,
-			<2576000 967000>,
-			<4680000 1404000>,
-			<49880000 1496000>;
-		qcom,dec-ddr-ab-ib = <0 0>,
-			<208000 303000>,
-			<536000 303000>,
-			<1012000 303000>,
-			<2024000 606000>,
-			<3240000 970000>,
-			<4048000 1212000>,
-			<4264000 1279000>;
-		qcom,iommu-groups = <&venus_domain_ns &venus_domain_sec_bitstream
-			&venus_domain_sec_pixel &venus_domain_sec_non_pixel>;
-		qcom,iommu-group-buffer-types = <0xfff 0x91 0x42 0x120>;
-		qcom,buffer-type-tz-usage-table = <0x91 0x1>,
-					<0x42 0x2>,
-					<0x120 0x3>;
-	};
-
-        qcom,vidc {
-                compatible = "qcom,msm-vidc";
-                qcom,hfi = "q6";
-                qcom,max-hw-load = <108000>; /* 720p @ 30 */
-        };
-
-
 	i2c@f9967000 {
 		analogix_anx7808@72 {
 			status = "ok";
