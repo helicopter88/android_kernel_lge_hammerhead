@@ -52,7 +52,6 @@ struct mdss_mdp_cmd_ctx {
 	u16 vporch;	/* vertical porches */
 	u16 start_threshold;
 	u32 vclk_line;	/* vsync clock per line */
-	struct mdss_panel_recovery recovery;
 };
 
 struct mdss_mdp_cmd_ctx mdss_mdp_cmd_ctx_list[MAX_SESSIONS];
@@ -63,6 +62,9 @@ static inline u32 mdss_mdp_cmd_line_count(struct mdss_mdp_ctl *ctl)
 	u32 cnt = 0xffff;	/* init it to an invalid value */
 	u32 init;
 	u32 height;
+
+	if (!ctl)
+		goto exit;
 
 	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_ON, false);
 
@@ -267,31 +269,6 @@ static void mdss_mdp_cmd_readptr_done(void *arg)
 	spin_unlock(&ctx->clk_lock);
 }
 
-static void mdss_mdp_cmd_underflow_recovery(void *data)
-{
-	struct mdss_mdp_cmd_ctx *ctx = data;
-	unsigned long flags;
-
-	if (!data) {
-		pr_err("%s: invalid ctx\n", __func__);
-		return;
-	}
-
-	if (!ctx->ctl)
-		return;
-	spin_lock_irqsave(&ctx->clk_lock, flags);
-	if (ctx->koff_cnt) {
-		mdss_mdp_ctl_reset(ctx->ctl);
-		pr_debug("%s: intf_num=%d\n", __func__,
-					ctx->ctl->intf_num);
-		ctx->koff_cnt--;
-		mdss_mdp_irq_disable_nosync(MDSS_MDP_IRQ_PING_PONG_COMP,
-						ctx->pp_num);
-		complete_all(&ctx->pp_comp);
-	}
-	spin_unlock_irqrestore(&ctx->clk_lock, flags);
-}
-
 static void mdss_mdp_cmd_pingpong_done(void *arg)
 {
 	struct mdss_mdp_ctl *ctl = arg;
@@ -414,7 +391,7 @@ static int mdss_mdp_cmd_remove_vsync_handler(struct mdss_mdp_ctl *ctl,
 	return 0;
 }
 
-int mdss_mdp_cmd_reconfigure_splash_done(struct mdss_mdp_ctl *ctl, bool handoff)
+int mdss_mdp_cmd_reconfigure_splash_done(struct mdss_mdp_ctl *ctl)
 {
 	struct mdss_panel_data *pdata;
 	int ret = 0;
@@ -438,6 +415,7 @@ static int mdss_mdp_cmd_wait4pingpong(struct mdss_mdp_ctl *ctl, void *arg)
 	unsigned long flags;
 	int need_wait = 0;
 	int rc = 0;
+	int flush_wq = (int) arg;
 
 	ctx = (struct mdss_mdp_cmd_ctx *) ctl->priv_data;
 	if (!ctx) {
@@ -467,22 +445,9 @@ static int mdss_mdp_cmd_wait4pingpong(struct mdss_mdp_ctl *ctl, void *arg)
 		}
 	}
 
-	return rc;
-}
+	if (flush_wq)
+		flush_work_sync(&ctx->pp_done_work);
 
-static int mdss_mdp_cmd_set_partial_roi(struct mdss_mdp_ctl *ctl)
-{
-	int rc = 0;
-	if (ctl->roi.w && ctl->roi.h && ctl->roi_changed &&
-			ctl->panel_data->panel_info.partial_update_enabled) {
-		ctl->panel_data->panel_info.roi_x = ctl->roi.x;
-		ctl->panel_data->panel_info.roi_y = ctl->roi.y;
-		ctl->panel_data->panel_info.roi_w = ctl->roi.w;
-		ctl->panel_data->panel_info.roi_h = ctl->roi.h;
-
-		rc = mdss_mdp_ctl_intf_event(ctl,
-				MDSS_EVENT_ENABLE_PARTIAL_UPDATE, NULL);
-	}
 	return rc;
 }
 
@@ -508,13 +473,10 @@ int mdss_mdp_cmd_kickoff(struct mdss_mdp_ctl *ctl, void *arg)
 		WARN(rc, "intf %d panel on error (%d)\n", ctl->intf_num, rc);
 	}
 
-	mdss_mdp_cmd_set_partial_roi(ctl);
-
 	/*
 	 * tx dcs command if had any
 	 */
-	mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_DSI_CMDLIST_KOFF,
-						(void *)&ctx->recovery);
+	mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_DSI_CMDLIST_KOFF, NULL);
 
 	mdss_mdp_cmd_clk_on(ctx);
 
@@ -561,9 +523,11 @@ int mdss_mdp_cmd_stop(struct mdss_mdp_ctl *ctl)
 	if (cancel_work_sync(&ctx->clk_work))
 		pr_debug("no pending clk work\n");
 
+	mdss_mdp_cmd_wait4pingpong(ctl, NULL);
+
 	mdss_mdp_cmd_clk_off(ctx);
 
-	flush_work(&ctx->pp_done_work);
+	flush_work_sync(&ctx->pp_done_work);
 
 	ctx->panel_on = 0;
 
@@ -576,10 +540,10 @@ int mdss_mdp_cmd_stop(struct mdss_mdp_ctl *ctl)
 	ctl->priv_data = NULL;
 
 	ret = mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_BLANK, NULL);
-	WARN(ret, "intf %d unblank error (%d)\n", ctl->intf_num, ret);
+	WARN(ret, "intf %d blank error (%d)\n", ctl->intf_num, ret);
 
 	ret = mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_PANEL_OFF, NULL);
-	WARN(ret, "intf %d unblank error (%d)\n", ctl->intf_num, ret);
+	WARN(ret, "intf %d panel off error (%d)\n", ctl->intf_num, ret);
 
 	ctl->stop_fnc = NULL;
 	ctl->display_fnc = NULL;
@@ -634,9 +598,6 @@ int mdss_mdp_cmd_start(struct mdss_mdp_ctl *ctl)
 	INIT_WORK(&ctx->pp_done_work, pingpong_done_work);
 	atomic_set(&ctx->pp_done_cnt, 0);
 	INIT_LIST_HEAD(&ctx->vsync_handlers);
-
-	ctx->recovery.fxn = mdss_mdp_cmd_underflow_recovery;
-	ctx->recovery.data = ctx;
 
 	pr_debug("%s: ctx=%p num=%d mixer=%d\n", __func__,
 				ctx, ctx->pp_num, mixer->num);

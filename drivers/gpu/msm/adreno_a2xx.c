@@ -2088,8 +2088,6 @@ static void a2xx_start(struct adreno_device *adreno_dev)
 	kgsl_regwrite(device, REG_SQ_INT_CNTL, 0);
 
 	a2xx_gmeminit(adreno_dev);
-
-	kgsl_regwrite(device, REG_CP_DEBUG, A2XX_CP_DEBUG_DEFAULT);
 }
 
 static void a2xx_postmortem_dump(struct adreno_device *adreno_dev)
@@ -2277,6 +2275,7 @@ static unsigned int a2xx_register_offsets[ADRENO_REG_REGISTER_MAX] = {
 	ADRENO_REG_DEFINE(ADRENO_REG_CP_IB2_BASE, REG_CP_IB2_BASE),
 	ADRENO_REG_DEFINE(ADRENO_REG_CP_IB2_BUFSZ, REG_CP_IB2_BUFSZ),
 	ADRENO_REG_DEFINE(ADRENO_REG_CP_TIMESTAMP, REG_CP_TIMESTAMP),
+	ADRENO_REG_DEFINE(ADRENO_REG_CP_ME_RAM_RADDR, REG_CP_ME_RAM_RADDR),
 	ADRENO_REG_DEFINE(ADRENO_REG_SCRATCH_ADDR, REG_SCRATCH_ADDR),
 	ADRENO_REG_DEFINE(ADRENO_REG_SCRATCH_UMSK, REG_SCRATCH_UMSK),
 	ADRENO_REG_DEFINE(ADRENO_REG_RBBM_STATUS, REG_RBBM_STATUS),
@@ -2290,7 +2289,7 @@ static unsigned int a2xx_register_offsets[ADRENO_REG_REGISTER_MAX] = {
 	ADRENO_REG_DEFINE(ADRENO_REG_TP0_CHICKEN, REG_TP0_CHICKEN),
 };
 
-struct adreno_reg_offsets a2xx_reg_offsets = {
+const struct adreno_reg_offsets a2xx_reg_offsets = {
 	.offsets = a2xx_register_offsets,
 	.offset_0 = ADRENO_REG_REGISTER_MAX,
 };

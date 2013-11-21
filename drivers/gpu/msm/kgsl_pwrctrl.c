@@ -668,10 +668,10 @@ static int __force_on_show(struct device *dev,
 					char *buf, int flag)
 {
 	struct kgsl_device *device = kgsl_device_from_dev(dev);
+	int i = test_bit(flag, &device->pwrctrl.ctrl_flags);
 	if (device == NULL)
 		return 0;
-	return snprintf(buf, PAGE_SIZE, "%d\n",
-		test_bit(flag, &device->pwrctrl.ctrl_flags));
+	return snprintf(buf, PAGE_SIZE, "%d\n", i);
 }
 
 static int __force_on_store(struct device *dev,
@@ -1433,6 +1433,7 @@ int kgsl_pwrctrl_wake(struct kgsl_device *device)
 			kgsl_pwrstate_to_str(state),
 			context ? context->id : -1, ts_processed);
 		kgsl_context_put(context);
+
 		/* fall through */
 	case KGSL_STATE_NAP:
 		/* Turn on the core clocks */
@@ -1446,8 +1447,6 @@ int kgsl_pwrctrl_wake(struct kgsl_device *device)
 				device->pwrctrl.pm_qos_latency);
 	case KGSL_STATE_ACTIVE:
 		kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
-		break;
-	case KGSL_STATE_INIT:
 		break;
 	default:
 		KGSL_PWR_WARN(device, "unhandled state %s\n",

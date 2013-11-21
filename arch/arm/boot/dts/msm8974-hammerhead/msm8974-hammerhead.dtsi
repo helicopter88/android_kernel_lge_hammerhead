@@ -20,6 +20,7 @@
 /include/ "msm8974-hammerhead-nfc.dtsi"
 /include/ "msm8974-hammerhead-regulator.dtsi"
 /include/ "msm8974-hammerhead-sensor.dtsi"
+
 / {
 	aliases {
 		uart99 = &uart10;
@@ -36,37 +37,19 @@
 	};
 
 	qcom,mdss_mdp@fd900000 {
-		qcom,vbif-settings = <0x0004 0x00000001>;
-
-		qcom,mdss-wb-off = <0x00011100 0x00011500
-			    0x00011900 0x00011D00 0x00012100>;
-		qcom,mdss-intf-off = <0x00012500 0x00012700
-			      0x00012900 0x00012b00>;
-		qcom,mdss-pingpong-off = <0x00012D00 0x00012E00 0x00012F00>;
-		qcom,mdss-has-bwc;
-		qcom,mdss-has-decimation;
-		qcom,mdss-ad-off = <0x0013100 0x00013300>;
-		qcom,mdss-pref-prim-intf = "dsi";
 		qcom,mdss_fb_primary {
-			qcom,memory-reservation-size = <0x1000000>;		
+			qcom,memory-reservation-size = <0x1000000>;
 		};
 	};
 
 	qcom,mdss_dsi@fd922800 {
-		qcom,platform-enable-gpio = <&msmgpio 58 0>;
-		qcom,platform-reset-gpio = <&pm8941_gpios 19 0>;
-		qcom,platform-te-gpio = <&msmgpio 12 0>;
 		qcom,mdss-dsi-use-vdd-supply = <0>;
 	};
 
-	qcom,mdss_hdmi_tx@fd922100 {
-		reg =	<0xfd922100 0x370>,
-		<0xfd922500 0x7C>,
-		<0xfc4b8000 0x60F0>;
-		reg-names = "core_physical", "phy_physical", "qfprom_physical";
+	qcom,hdmi_tx@fd922100 {
 		status = "ok";
 	};
-	
+
 	i2c@f9967000 {
 		analogix_anx7808@72 {
 			status = "ok";
@@ -155,10 +138,6 @@
 
 	qcom,msm-thermal {
 		qcom,limit-temp = <90>;
-	};
-
-	qcom,msm-vidc {
-		status = "ok";
 	};
 
 	bluesleep {
