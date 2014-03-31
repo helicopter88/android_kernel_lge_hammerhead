@@ -175,6 +175,21 @@
 		interrupt-names = "cpp";
 		vdd-supply = <&gdsc_vfe>;
 	};
+	
+	led_flash0: qcom,camera-led-flash {
+                cell-index = <0>;
+                compatible = "qcom,camera-led-flash";
+                qcom,flash-type = <1>;
+                qcom,flash-source = <&pm8941_flash0 &pm8941_flash1>;
+                qcom,torch-source = <&pm8941_torch>;
+        };
+
+        qcom,ois@48 {
+                cell-index = <998>;
+                reg = <0x48 0x0>;
+                compatible = "qcom,ois";
+                qcom,cci-master = <0>;
+        };
 
 	cci: qcom,cci@fda0C000 {
 		cell-index = <0>;
