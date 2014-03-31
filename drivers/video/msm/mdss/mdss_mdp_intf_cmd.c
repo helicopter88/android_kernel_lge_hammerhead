@@ -247,6 +247,8 @@ static void mdss_mdp_cmd_readptr_done(void *arg)
 		return;
 	}
 
+	mdss_mdp_ctl_perf_taken(ctl);
+
 	vsync_time = ktime_get();
 	ctl->vsync_cnt++;
 
@@ -308,6 +310,8 @@ static void mdss_mdp_cmd_pingpong_done(void *arg)
 		return;
 	}
 
+	mdss_mdp_ctl_perf_done(ctl);
+
 	spin_lock(&ctx->clk_lock);
 	list_for_each_entry(tmp, &ctx->vsync_handlers, list) {
 		if (tmp->enabled && tmp->cmd_post_flush)
@@ -340,9 +344,12 @@ static void pingpong_done_work(struct work_struct *work)
 	struct mdss_mdp_cmd_ctx *ctx =
 		container_of(work, typeof(*ctx), pp_done_work);
 
-	if (ctx->ctl)
+	if (ctx->ctl) {
 		while (atomic_add_unless(&ctx->pp_done_cnt, -1, 0))
 			mdss_mdp_ctl_notify(ctx->ctl, MDP_NOTIFY_FRAME_DONE);
+
+		mdss_mdp_ctl_perf_release_bw(ctx->ctl);
+	}
 }
 
 static void clk_ctrl_work(struct work_struct *work)
@@ -363,6 +370,7 @@ static int mdss_mdp_cmd_add_vsync_handler(struct mdss_mdp_ctl *ctl,
 {
 	struct mdss_mdp_cmd_ctx *ctx;
 	unsigned long flags;
+	bool enable_rdptr = false;
 
 	ctx = (struct mdss_mdp_cmd_ctx *) ctl->priv_data;
 	if (!ctx) {
@@ -374,12 +382,14 @@ static int mdss_mdp_cmd_add_vsync_handler(struct mdss_mdp_ctl *ctl,
 	if (!handle->enabled) {
 		handle->enabled = true;
 		list_add(&handle->list, &ctx->vsync_handlers);
-		if (!handle->cmd_post_flush)
-			ctx->vsync_enabled = 1;
+
+		enable_rdptr = !handle->cmd_post_flush;
+		if (enable_rdptr)
+			ctx->vsync_enabled++;
 	}
 	spin_unlock_irqrestore(&ctx->clk_lock, flags);
 
-	if (!handle->cmd_post_flush)
+	if (enable_rdptr)
 		mdss_mdp_cmd_clk_on(ctx);
 
 	return 0;
@@ -388,11 +398,8 @@ static int mdss_mdp_cmd_add_vsync_handler(struct mdss_mdp_ctl *ctl,
 static int mdss_mdp_cmd_remove_vsync_handler(struct mdss_mdp_ctl *ctl,
 		struct mdss_mdp_vsync_handler *handle)
 {
-
 	struct mdss_mdp_cmd_ctx *ctx;
 	unsigned long flags;
-	struct mdss_mdp_vsync_handler *tmp;
-	int num_rdptr_vsync = 0;
 
 	ctx = (struct mdss_mdp_cmd_ctx *) ctl->priv_data;
 	if (!ctx) {
@@ -400,19 +407,17 @@ static int mdss_mdp_cmd_remove_vsync_handler(struct mdss_mdp_ctl *ctl,
 		return -ENODEV;
 	}
 
-
 	spin_lock_irqsave(&ctx->clk_lock, flags);
 	if (handle->enabled) {
 		handle->enabled = false;
 		list_del_init(&handle->list);
-	}
-	list_for_each_entry(tmp, &ctx->vsync_handlers, list) {
-		if (!tmp->cmd_post_flush)
-			num_rdptr_vsync++;
-	}
-	if (!num_rdptr_vsync) {
-		ctx->vsync_enabled = 0;
-		ctx->rdptr_enabled = VSYNC_EXPIRE_TICK;
+
+		if (!handle->cmd_post_flush) {
+			if (ctx->vsync_enabled)
+				ctx->vsync_enabled--;
+			else
+				WARN(1, "unbalanced vsync disable");
+		}
 	}
 	spin_unlock_irqrestore(&ctx->clk_lock, flags);
 	return 0;

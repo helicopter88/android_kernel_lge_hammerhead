@@ -269,7 +269,6 @@
 			qcom,iadc-vadc = <&pm8110_vadc>;
 			qcom,iadc-poll-eoc;
 			qcom,use-default-rds-trim = <1>;
-			qcom,pmic-revid = <&pm8110_revid>;
 
 			chan@0 {
 				label = "internal_rsense";
