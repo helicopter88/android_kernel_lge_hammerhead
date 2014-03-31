@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -303,28 +303,8 @@ static int ngd_xfer_msg(struct slim_controller *ctrl, struct slim_msg_txn *txn)
 			 * Messages related to data channel management can't
 			 * wait since they are holding reconfiguration lock.
 			 * clk_pause in resume (which can change state back to
-			 * MSM_CTRL_AWAKE), will need that lock.
-			 * Port disconnection, channel removal calls should pass
-			 * through since there is no activity on the bus and
-			 * those calls are triggered by clients due to
-			 * device_down callback in that situation.
-			 * Returning 0 on the disconnections and
-			 * removals will ensure consistent state of channels,
-			 * ports with the HW
-			 * Remote requests to remove channel/port will be
-			 * returned from the path where they wait on
-			 * acknowledgement from ADSP
+			 * MSM_CTRL_AWAKE), will need that lock
 			 */
-			if ((txn->mt == SLIM_MSG_MT_DEST_REFERRED_USER) &&
-				((mc == SLIM_USR_MC_CHAN_CTRL ||
-				mc == SLIM_USR_MC_DISCONNECT_PORT ||
-				mc == SLIM_USR_MC_RECONFIG_NOW)))
-				return -EREMOTEIO;
-			if ((txn->mt == SLIM_MSG_MT_CORE) &&
-				((mc == SLIM_MSG_MC_DISCONNECT_PORT ||
-				mc == SLIM_MSG_MC_NEXT_REMOVE_CHANNEL ||
-				mc == SLIM_USR_MC_RECONFIG_NOW)))
-				return 0;
 			if ((txn->mt == SLIM_MSG_MT_CORE) &&
 				((mc >= SLIM_MSG_MC_CONNECT_SOURCE &&
 				mc <= SLIM_MSG_MC_CHANGE_CONTENT) ||
@@ -333,7 +313,7 @@ static int ngd_xfer_msg(struct slim_controller *ctrl, struct slim_msg_txn *txn)
 				return -EREMOTEIO;
 			if ((txn->mt == SLIM_MSG_MT_DEST_REFERRED_USER) &&
 				((mc >= SLIM_USR_MC_DEFINE_CHAN &&
-				mc < SLIM_USR_MC_DISCONNECT_PORT)))
+				mc <= SLIM_USR_MC_DISCONNECT_PORT)))
 				return -EREMOTEIO;
 			timeout = wait_for_completion_timeout(&dev->ctrl_up,
 							HZ);
@@ -556,7 +536,6 @@ static int ngd_xferandwait_ack(struct slim_controller *ctrl,
 		else
 			ret = txn->ec;
 	}
-
 	if (ret) {
 		if (ret != -EREMOTEIO || txn->mc != SLIM_USR_MC_CHAN_CTRL)
 			pr_err("master msg:0x%x,tid:%d ret:%d", txn->mc,
@@ -1031,7 +1010,11 @@ static int ngd_slim_rx_msgq_thread(void *data)
 
 	while (!kthread_should_stop()) {
 		set_current_state(TASK_INTERRUPTIBLE);
-		wait_for_completion(notify);
+		ret = wait_for_completion_interruptible(notify);
+		if (ret) {
+			dev_err(dev->dev, "rx thread wait err:%d", ret);
+			continue;
+		}
 		/* 1 irq notification per message */
 		if (dev->use_rx_msgqs != MSM_MSGQ_ENABLED) {
 			msm_slim_rx_dequeue(dev, (u8 *)buffer);
@@ -1069,7 +1052,12 @@ static int ngd_notify_slaves(void *data)
 	int ret, i = 0;
 	while (!kthread_should_stop()) {
 		set_current_state(TASK_INTERRUPTIBLE);
-		wait_for_completion(&dev->qmi.slave_notify);
+		ret = wait_for_completion_timeout(&dev->qmi.slave_notify,
+								HZ);
+		if (!ret) {
+			dev_dbg(dev->dev, "slave thread wait err:%d", ret);
+			continue;
+		}
 		/* Probe devices for first notification */
 		if (!i) {
 			dev->err = 0;

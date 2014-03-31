@@ -1112,14 +1112,14 @@ static const struct snd_kcontrol_new tapan_common_snd_controls[] = {
 	SOC_ENUM_EXT("EAR PA Gain", tapan_ear_pa_gain_enum[0],
 		tapan_pa_gain_get, tapan_pa_gain_put),
 
-	SOC_SINGLE_TLV("HPHL Volume", TAPAN_A_RX_HPH_L_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("HPHL Volume", TAPAN_A_RX_HPH_L_GAIN, 0, 14, 1,
 		line_gain),
-	SOC_SINGLE_TLV("HPHR Volume", TAPAN_A_RX_HPH_R_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("HPHR Volume", TAPAN_A_RX_HPH_R_GAIN, 0, 14, 1,
 		line_gain),
 
-	SOC_SINGLE_TLV("LINEOUT1 Volume", TAPAN_A_RX_LINE_1_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("LINEOUT1 Volume", TAPAN_A_RX_LINE_1_GAIN, 0, 14, 1,
 		line_gain),
-	SOC_SINGLE_TLV("LINEOUT2 Volume", TAPAN_A_RX_LINE_2_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("LINEOUT2 Volume", TAPAN_A_RX_LINE_2_GAIN, 0, 14, 1,
 		line_gain),
 
 	SOC_SINGLE_TLV("SPK DRV Volume", TAPAN_A_SPKR_DRV_GAIN, 3, 8, 1,
@@ -2286,23 +2286,16 @@ static int tapan_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 }
 
 /* called under codec_resource_lock acquisition */
-static int tapan_enable_mbhc_micbias(struct snd_soc_codec *codec, bool enable,
-				     enum wcd9xxx_micbias_num micb_num)
+static int tapan_enable_mbhc_micbias(struct snd_soc_codec *codec, bool enable)
 {
 	int rc;
-	const char *micbias;
-
-	if (micb_num == MBHC_MICBIAS2)
-		micbias = DAPM_MICBIAS2_EXTERNAL_STANDALONE;
-	else
-		return -EINVAL;
 
 	if (enable)
 		rc = snd_soc_dapm_force_enable_pin(&codec->dapm,
-						   micbias);
+					     DAPM_MICBIAS2_EXTERNAL_STANDALONE);
 	else
 		rc = snd_soc_dapm_disable_pin(&codec->dapm,
-					      micbias);
+					     DAPM_MICBIAS2_EXTERNAL_STANDALONE);
 	if (!rc)
 		snd_soc_dapm_sync(&codec->dapm);
 	pr_debug("%s: leave ret %d\n", __func__, rc);

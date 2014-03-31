@@ -143,10 +143,6 @@ struct quot_adjust_info {
 	int quot_adjust;
 };
 
-static const char * const vdd_apc_name[] =	{"vdd-apc-optional-prim",
-						"vdd-apc-optional-sec",
-						"vdd-apc"};
-
 enum voltage_change_dir {
 	NO_CHANGE,
 	DOWN,
@@ -177,7 +173,6 @@ struct cpr_regulator {
 	int			vdd_mx_vmax;
 	int			vdd_mx_vmin_method;
 	int			vdd_mx_vmin;
-	int			vdd_mx_corner_map[CPR_FUSE_CORNER_MAX];
 
 	/* CPR parameters */
 	u64		cpr_fuse_bits;
@@ -347,19 +342,6 @@ static void cpr_ctl_enable(struct cpr_regulator *cpr_vreg, int corner)
 	if (cpr_vreg->is_cpr_suspended)
 		return;
 
-	/* Program Consecutive Up & Down */
-	val = ((cpr_vreg->timer_cons_down & RBIF_TIMER_ADJ_CONS_DOWN_MASK)
-			<< RBIF_TIMER_ADJ_CONS_DOWN_SHIFT) |
-		(cpr_vreg->timer_cons_up & RBIF_TIMER_ADJ_CONS_UP_MASK);
-	cpr_masked_write(cpr_vreg, REG_RBIF_TIMER_ADJUST,
-			RBIF_TIMER_ADJ_CONS_UP_MASK |
-			RBIF_TIMER_ADJ_CONS_DOWN_MASK, val);
-	cpr_masked_write(cpr_vreg, REG_RBCPR_CTL,
-			RBCPR_CTL_SW_AUTO_CONT_NACK_DN_EN |
-			RBCPR_CTL_SW_AUTO_CONT_ACK_EN,
-			cpr_vreg->save_ctl[corner]);
-	cpr_irq_set(cpr_vreg, cpr_vreg->save_irq[corner]);
-
 	if (cpr_is_allowed(cpr_vreg) &&
 	    (cpr_vreg->ceiling_volt[fuse_corner] >
 		cpr_vreg->floor_volt[fuse_corner]))
@@ -373,16 +355,6 @@ static void cpr_ctl_disable(struct cpr_regulator *cpr_vreg)
 {
 	if (cpr_vreg->is_cpr_suspended)
 		return;
-
-	cpr_irq_set(cpr_vreg, 0);
-	cpr_ctl_modify(cpr_vreg, RBCPR_CTL_SW_AUTO_CONT_NACK_DN_EN |
-			RBCPR_CTL_SW_AUTO_CONT_ACK_EN, 0);
-	cpr_masked_write(cpr_vreg, REG_RBIF_TIMER_ADJUST,
-			RBIF_TIMER_ADJ_CONS_UP_MASK |
-			RBIF_TIMER_ADJ_CONS_DOWN_MASK, 0);
-	cpr_irq_clr(cpr_vreg);
-	cpr_write(cpr_vreg, REG_RBIF_CONT_ACK_CMD, 1);
-	cpr_write(cpr_vreg, REG_RBIF_CONT_NACK_CMD, 1);
 	cpr_ctl_modify(cpr_vreg, RBCPR_CTL_LOOP_EN, 0);
 }
 
@@ -501,9 +473,6 @@ static int cpr_mx_get(struct cpr_regulator *cpr_vreg, int corner, int apc_volt)
 		break;
 	case VDD_MX_VMIN_MX_VMAX:
 		vdd_mx = cpr_vreg->vdd_mx_vmax;
-		break;
-	case VDD_MX_VMIN_APC_CORNER_MAP:
-		vdd_mx = cpr_vreg->vdd_mx_corner_map[fuse_corner];
 		break;
 	default:
 		vdd_mx = 0;
@@ -1199,17 +1168,11 @@ static int __devinit cpr_apc_init(struct platform_device *pdev,
 			       struct cpr_regulator *cpr_vreg)
 {
 	struct device_node *of_node = pdev->dev.of_node;
-	int i, rc = 0;
+	int rc;
 
-	for (i = 0; i < ARRAY_SIZE(vdd_apc_name); i++) {
-		cpr_vreg->vdd_apc = devm_regulator_get(&pdev->dev,
-					vdd_apc_name[i]);
+	cpr_vreg->vdd_apc = devm_regulator_get(&pdev->dev, "vdd-apc");
+	if (IS_ERR_OR_NULL(cpr_vreg->vdd_apc)) {
 		rc = PTR_RET(cpr_vreg->vdd_apc);
-		if (!IS_ERR_OR_NULL(cpr_vreg->vdd_apc))
-			break;
-	}
-
-	if (rc) {
 		if (rc != -EPROBE_DEFER)
 			pr_err("devm_regulator_get: rc=%d\n", rc);
 		return rc;
@@ -1242,23 +1205,11 @@ static int __devinit cpr_apc_init(struct platform_device *pdev,
 			pr_err("vdd-mx-vmin-method missing: rc=%d\n", rc);
 			return rc;
 		}
-		if (cpr_vreg->vdd_mx_vmin_method > VDD_MX_VMIN_APC_CORNER_MAP) {
+		if (cpr_vreg->vdd_mx_vmin_method > VDD_MX_VMIN_MX_VMAX) {
 			pr_err("Invalid vdd-mx-vmin-method(%d)\n",
 				cpr_vreg->vdd_mx_vmin_method);
 			return -EINVAL;
 		}
-
-		rc = of_property_read_u32_array(of_node,
-					"qcom,vdd-mx-corner-map",
-					&cpr_vreg->vdd_mx_corner_map[1],
-					CPR_FUSE_CORNER_MAX - 1);
-		if (rc && cpr_vreg->vdd_mx_vmin_method ==
-			VDD_MX_VMIN_APC_CORNER_MAP) {
-			pr_err("qcom,vdd-mx-corner-map missing: rc=%d\n",
-				rc);
-			return rc;
-		}
-
 	}
 
 	return 0;
