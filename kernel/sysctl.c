@@ -1709,7 +1709,7 @@ int proc_dostring(struct ctl_table *table, int write,
 
 static size_t proc_skip_spaces(char **buf)
 {
-	size_t ret;
+	size_t ret = 0;
 	char *tmp = skip_spaces(*buf);
 	ret = tmp - *buf;
 	*buf = tmp;
@@ -1862,8 +1862,8 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
 {
 	int *i, vleft, first = 1, err = 0;
 	unsigned long page = 0;
-	size_t left;
-	char *kbuf;
+	size_t left = 0;
+	char *kbuf = 0;
 	
 	if (!tbl_data || !table->maxlen || !*lenp || (*ppos && !write)) {
 		*lenp = 0;
@@ -2077,11 +2077,11 @@ static int __do_proc_doulongvec_minmax(void *data, struct ctl_table *table, int 
 				     unsigned long convmul,
 				     unsigned long convdiv)
 {
-	unsigned long *i, *min, *max;
-	int vleft, first = 1, err = 0;
+	unsigned long *i = 0, *min = 0, *max = 0;
+	int vleft = 0, first = 1, err = 0;
 	unsigned long page = 0;
-	size_t left;
-	char *kbuf;
+	size_t left = 0;
+	char *kbuf = 0;
 
 	if (!data || !table->maxlen || !*lenp || (*ppos && !write)) {
 		*lenp = 0;
