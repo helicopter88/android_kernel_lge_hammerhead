@@ -369,6 +369,7 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+		   -Wno-array-bounds \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
@@ -565,7 +566,7 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -O2
+KBUILD_CFLAGS	+= -O3 -flto -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las -fgcse-after-reload -flive-range-shrinkage -fipa-pta -ftree-loop-linear -floop-strip-mine -floop-block -fgraphite-identity -floop-nest-optimize -floop-parallelize-all -ftree-loop-distribution -ftree-loop-im -ftree-loop-ivcanon -ftree-vectorize -funroll-loops -fbranch-target-load-optimize2 -fsection-anchors
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
