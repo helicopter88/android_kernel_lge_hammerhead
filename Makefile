@@ -332,7 +332,7 @@ AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
 REAL_CC		= $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
-AR		= $(CROSS_COMPILE)ar
+AR		= $(CROSS_COMPILE)gcc-ar
 NM		= $(CROSS_COMPILE)nm
 STRIP		= $(CROSS_COMPILE)strip
 OBJCOPY		= $(CROSS_COMPILE)objcopy
@@ -566,7 +566,7 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -O3 -flto -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las -fgcse-after-reload -flive-range-shrinkage -fipa-pta -ftree-loop-linear -floop-strip-mine -floop-block -fgraphite-identity -floop-nest-optimize -floop-parallelize-all -ftree-loop-distribution -ftree-loop-im -ftree-loop-ivcanon -ftree-vectorize -funroll-loops -fbranch-target-load-optimize2 -fsection-anchors
+KBUILD_CFLAGS	+= -O3 -flto -fno-toplevel-reorder -fuse-linker-plugin -flto=$(shell getconf _NPROCESSORS_ONLN) -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las -fgcse-after-reload -flive-range-shrinkage -fipa-pta -ftree-loop-linear -floop-strip-mine -floop-block -fgraphite-identity -floop-nest-optimize -floop-parallelize-all -ftree-loop-distribution -ftree-loop-im -ftree-loop-ivcanon -ftree-vectorize -funroll-loops -fbranch-target-load-optimize2
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
