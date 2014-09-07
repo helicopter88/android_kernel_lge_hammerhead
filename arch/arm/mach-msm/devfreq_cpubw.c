@@ -108,16 +108,16 @@ int cpubw_target(struct device *dev, unsigned long *freq, u32 flags)
 	return set_bw(*freq, gov_ab);
 }
 
-/*static struct devfreq_governor gov_data[] = {
+static struct devfreq_governor_data gov_data[] = {
 	{ .name = "performance" },
 	{ .name = "powersave" },
 	{ .name = "userspace" },
-};*/
+};
 struct devfreq_dev_profile cpubw_profile = {
 	.polling_ms = 50,
 	.target = cpubw_target,
-	//.data = gov_data,
-	//.num_governor_data = ARRAY_SIZE(gov_data),
+	.governor_data = gov_data,
+	.num_governor_data = ARRAY_SIZE(gov_data),
 };
 
 #define PROP_PORTS "qcom,cpu-mem-ports"
