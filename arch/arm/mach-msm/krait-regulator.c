@@ -144,7 +144,9 @@
 #define LDO_DELTA_MIN		10000
 #define LDO_DELTA_MAX		100000
 
+#define GCC_BASE		0xF9011000
 #define MSM_L2_SAW_PHYS		0xf9012000
+
 /**
  * struct pmic_gang_vreg -
  * @name:			the string used to represent the gang
@@ -1545,6 +1547,7 @@ module_exit(krait_power_exit);
 void secondary_cpu_hs_init(void *base_ptr)
 {
 	uint32_t reg_val;
+	void *gcc_base_ptr;
 	void *l2_saw_base;
 
 	if (version == 0) {
